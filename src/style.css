@@ -1,8 +1,67 @@
+@import url("https://fonts.googleapis.com/css?family=Poppins:100,200,300,400,500,600,700,800,900");
+
 body {
   height: 100vh;
   margin: 0;
   padding: 0;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 1rem;
+  text-align: center;
+  font-family: "Poppins", sans-serif;
+}
+
+.input-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+input {
+  border: 2px solid lightgrey;
+  border-radius: 1rem;
+  padding: 0.5rem 0.7rem;
+}
+
+span {
+  color: orange;
+  font-weight: bold;
+}
+
+.submit-btn {
+  background: orange;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 1rem;
+  padding: 0.4rem 1.5rem;
+}
+
+.submit-btn:hover {
+  background: lightgrey;
+  color: orange;
+  cursor: pointer;
+}
+
+.main {
+  background: lightgrey;
+  padding: 1rem;
+  border-radius: 1rem;
+  min-width: 350px;
+}
+
+.location {
+  font-size: 2rem;
+}
+
+.humidity::before {
+  content: "Humidity: ";
+}
+
+.description {
+  font-style: italic;
 }

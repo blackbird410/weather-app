@@ -1,5 +1,4 @@
 import "./style.css";
+import { fetchData, displayMain, displayWeather } from "./functions.js";
 
-const testContent = document.createElement("div");
-testContent.textContent = "Weather app";
-document.body.appendChild(testContent);
+displayMain();
