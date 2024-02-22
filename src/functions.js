@@ -30,11 +30,14 @@ const getWeather = async () => {
   const city = document.querySelector("input").value;
   if (city) {
     const cityWeather = await fetchData(city);
+    const error = document.querySelector("span");
     if (cityWeather.current != undefined) {
       displayWeather(cityWeather);
-      document.querySelector("span.error").textContent = "";
-    } else
-      document.querySelector("span.error").textContent = cityWeather.message;
+      error.classList.remove("active");
+    } else {
+      error.textContent = cityWeather.message;
+      error.classList.add("active");
+    }
   }
 };
 

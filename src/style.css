@@ -27,9 +27,19 @@ input {
   padding: 0.5rem 0.7rem;
 }
 
-span {
+.error {
+  visibility: hidden;
+}
+
+.error.active {
+  visibility: visible;
   color: orange;
   font-weight: bold;
+  background: white;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: none;
+  opacity: 0.8;
 }
 
 .submit-btn {
