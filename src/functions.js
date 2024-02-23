@@ -1,14 +1,41 @@
 const key = "8212294bf6e74d0ba3980745241902";
 const gifKey = "j7tOBnFk5xoG5Jzt7Vu11RD5pMrd5AxL";
 
+const displayLoader = () => {
+  const loadingContainer = document.createElement("div");
+  const loader = document.createElement("div");
+  const text = document.createElement("p");
+
+  loadingContainer.id = "loading-container";
+  loadingContainer.className = "hidden";
+  loader.className = "loader";
+  text.textContent = "Loading...";
+  loadingContainer.appendChild(loader);
+  loadingContainer.appendChild(text);
+  document.body.appendChild(loadingContainer);
+};
+
 export const displayMain = () => {
+  const main = document.createElement("div");
+  const location = document.createElement("div");
+  const country = document.createElement("div");
+  const temp = document.createElement("div");
+  const humidity = document.createElement("div");
+  const description = document.createElement("div");
+  const isDay = document.createElement("div");
   const inputWrapper = document.createElement("div");
   const input = document.createElement("input");
   const btn = document.createElement("div");
-  const weatherInfo = document.createElement("div");
   const error = document.createElement("span");
   const radioWrapper = document.createElement("div");
 
+  main.className = "main hidden";
+  location.className = "location";
+  country.className = "country";
+  temp.className = "temp";
+  humidity.className = "humidity";
+  description.className = "description";
+  isDay.className = "is-day";
   inputWrapper.className = "input-wrapper";
   input.id = "city";
   input.name = "city";
@@ -16,9 +43,11 @@ export const displayMain = () => {
   btn.className = "submit-btn";
   btn.textContent = "Search";
   btn.addEventListener("click", getWeather);
-  weatherInfo.className = "weather-info";
   error.className = "error";
   radioWrapper.className = "radio-wrapper";
+
+  temp.style.background = "orange";
+  temp.style.fontSize = "4rem";
 
   ["C", "F"].forEach((t) => {
     const i = document.createElement("input");
@@ -41,28 +70,40 @@ export const displayMain = () => {
   inputWrapper.appendChild(input);
   inputWrapper.appendChild(radioWrapper);
   inputWrapper.appendChild(btn);
+  main.appendChild(location);
+  main.appendChild(country);
+  main.appendChild(temp);
+  main.appendChild(humidity);
+  main.appendChild(description);
+  main.appendChild(isDay);
   document.body.appendChild(inputWrapper);
   document.body.appendChild(error);
-  document.body.appendChild(weatherInfo);
+  displayLoader();
+  document.body.appendChild(main);
 };
 
 const getWeather = async () => {
-  if (document.querySelector(".main")) document.querySelector(".main").remove();
   const city = document.querySelector("input").value;
+  const main = document.querySelector(".main");
+  const loadingContainer = document.querySelector("#loading-container");
+
   if (city) {
+    loadingContainer.classList.remove("hidden");
     const cityWeather = await fetchData(city);
     const error = document.querySelector("span");
+    loadingContainer.classList.add("hidden");
+    main.classList.remove("hidden");
+
     if (cityWeather.current != undefined) {
       displayWeather(cityWeather);
       error.classList.remove("active");
     } else {
       error.textContent = cityWeather.message;
       error.classList.add("active");
+      main.classList.add("hidden");
     }
   }
 };
-
-const displayError = (error) => {};
 
 export const fetchData = async (city) => {
   try {
@@ -85,24 +126,16 @@ export const fetchData = async (city) => {
 
 export const displayWeather = async (weatherData) => {
   const imageUrl = await fetchImage(weatherData.current.condition.text);
-  const main = document.createElement("div");
-  const location = document.createElement("div");
-  const country = document.createElement("div");
-  const temp = document.createElement("div");
-  const humidity = document.createElement("div");
-  const description = document.createElement("div");
-  const isDay = document.createElement("div");
+  const main = document.querySelector(".main");
+  const location = document.querySelector(".location");
+  const country = document.querySelector(".country");
+  const temp = document.querySelector(".temp");
+  const humidity = document.querySelector(".humidity");
+  const description = document.querySelector(".description");
+  const isDay = document.querySelector(".is-day");
   const tempUnit = document.querySelector(
     "input[name='temperature-unit']:checked",
   ).value;
-
-  main.className = "main";
-  location.className = "location";
-  country.className = "country";
-  temp.className = "temp";
-  humidity.className = "humidity";
-  description.className = "description";
-  isDay.className = "is-day";
 
   if (imageUrl) {
     document.body.style.background = `center / cover no-repeat url('${imageUrl}')`;
@@ -114,19 +147,10 @@ export const displayWeather = async (weatherData) => {
     tempUnit === "celcius"
       ? weatherData.current.temp_c + "\u00b0" + "C"
       : weatherData.current.temp_f + "\u00b0" + "F";
-  temp.style.background = "orange";
-  temp.style.fontSize = "4rem";
   humidity.textContent = weatherData.current.humidity;
   description.textContent = weatherData.current.condition.text;
   isDay.textContent = weatherData.current.is_day ? "Day" : "Night";
-
-  main.appendChild(location);
-  main.appendChild(country);
-  main.appendChild(temp);
-  main.appendChild(humidity);
-  main.appendChild(description);
-  main.appendChild(isDay);
-  document.querySelector(".weather-info").appendChild(main);
+  main.classList.remove("hidden");
 };
 
 const fetchImage = async (q) => {
