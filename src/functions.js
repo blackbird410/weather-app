@@ -7,6 +7,7 @@ export const displayMain = () => {
   const btn = document.createElement("div");
   const weatherInfo = document.createElement("div");
   const error = document.createElement("span");
+  const radioWrapper = document.createElement("div");
 
   inputWrapper.className = "input-wrapper";
   input.id = "city";
@@ -17,8 +18,28 @@ export const displayMain = () => {
   btn.addEventListener("click", getWeather);
   weatherInfo.className = "weather-info";
   error.className = "error";
+  radioWrapper.className = "radio-wrapper";
+
+  ["C", "F"].forEach((t) => {
+    const i = document.createElement("input");
+    const l = document.createElement("label");
+    const w = document.createElement("div");
+    i.type = "radio";
+    i.id = t === "C" ? "celcius" : "fahrenheit";
+    i.name = "temperature-unit";
+    i.value = t === "C" ? "celcius" : "fahrenheit";
+    l.for = i.id;
+    l.textContent = `\u00b0${t}`;
+    w.className = "radio";
+
+    if (t === "C") i.checked = true;
+    w.appendChild(i);
+    w.appendChild(l);
+    radioWrapper.appendChild(w);
+  });
 
   inputWrapper.appendChild(input);
+  inputWrapper.appendChild(radioWrapper);
   inputWrapper.appendChild(btn);
   document.body.appendChild(inputWrapper);
   document.body.appendChild(error);
@@ -71,6 +92,9 @@ export const displayWeather = async (weatherData) => {
   const humidity = document.createElement("div");
   const description = document.createElement("div");
   const isDay = document.createElement("div");
+  const tempUnit = document.querySelector(
+    "input[name='temperature-unit']:checked",
+  ).value;
 
   main.className = "main";
   location.className = "location";
@@ -85,7 +109,11 @@ export const displayWeather = async (weatherData) => {
   }
   location.textContent = weatherData.location.name;
   country.textContent = weatherData.location.country;
-  temp.textContent = weatherData.current.temp_c + "\u00b0";
+
+  temp.textContent =
+    tempUnit === "celcius"
+      ? weatherData.current.temp_c + "\u00b0" + "C"
+      : weatherData.current.temp_f + "\u00b0" + "F";
   temp.style.background = "orange";
   temp.style.fontSize = "4rem";
   humidity.textContent = weatherData.current.humidity;
