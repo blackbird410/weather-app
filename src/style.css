@@ -13,6 +13,10 @@ body {
   font-family: "Poppins", sans-serif;
 }
 
+.main.black-text {
+  color: #1f51ff;
+}
+
 .hidden {
   display: none;
 }
@@ -71,10 +75,11 @@ input {
 }
 
 .main {
-  background: lightgrey;
+  backdrop-filter: blur(15px);
   padding: 1rem;
   border-radius: 1rem;
   min-width: 350px;
+  color: white;
 }
 
 .location {
@@ -87,6 +92,10 @@ input {
 
 .description {
   font-style: italic;
+}
+
+.time {
+  font-size: 2rem;
 }
 
 @keyframes spin {

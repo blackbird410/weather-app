@@ -1,5 +1,10 @@
+import cloudy from "./img/cloudy.jpg";
+import rainy from "./img/rainy.jpg";
+import clear from "./img/clear.jpg";
+import sunny from "./img/sunset.jpg";
+
 const key = "8212294bf6e74d0ba3980745241902";
-const gifKey = "j7tOBnFk5xoG5Jzt7Vu11RD5pMrd5AxL";
+let currentData;
 
 const displayLoader = () => {
   const loadingContainer = document.createElement("div");
@@ -22,7 +27,8 @@ export const displayMain = () => {
   const temp = document.createElement("div");
   const humidity = document.createElement("div");
   const description = document.createElement("div");
-  const isDay = document.createElement("div");
+  const date = document.createElement("div");
+  const time = document.createElement("div");
   const inputWrapper = document.createElement("div");
   const input = document.createElement("input");
   const btn = document.createElement("div");
@@ -35,7 +41,8 @@ export const displayMain = () => {
   temp.className = "temp";
   humidity.className = "humidity";
   description.className = "description";
-  isDay.className = "is-day";
+  date.className = "date";
+  time.className = "time";
   inputWrapper.className = "input-wrapper";
   input.id = "city";
   input.name = "city";
@@ -48,6 +55,8 @@ export const displayMain = () => {
 
   temp.style.background = "orange";
   temp.style.fontSize = "4rem";
+
+  setBackground(clear);
 
   ["C", "F"].forEach((t) => {
     const i = document.createElement("input");
@@ -64,6 +73,7 @@ export const displayMain = () => {
     if (t === "C") i.checked = true;
     w.appendChild(i);
     w.appendChild(l);
+    i.addEventListener("click", switchUnit);
     radioWrapper.appendChild(w);
   });
 
@@ -75,11 +85,24 @@ export const displayMain = () => {
   main.appendChild(temp);
   main.appendChild(humidity);
   main.appendChild(description);
-  main.appendChild(isDay);
+  main.appendChild(time);
+  main.appendChild(date);
   document.body.appendChild(inputWrapper);
   document.body.appendChild(error);
   displayLoader();
   document.body.appendChild(main);
+};
+
+const switchUnit = (e) => {
+  if (currentData) {
+    let tempUnit = e.currentTarget.value;
+    const temp = document.querySelector(".temp");
+    console.log(tempUnit);
+    temp.textContent =
+      tempUnit === "celcius"
+        ? currentData.current.temp_c + "\u00b0" + "C"
+        : currentData.current.temp_f + "\u00b0" + "F";
+  }
 };
 
 const getWeather = async () => {
@@ -96,6 +119,7 @@ const getWeather = async () => {
 
     if (cityWeather.current != undefined) {
       displayWeather(cityWeather);
+      currentData = cityWeather;
       error.classList.remove("active");
     } else {
       error.textContent = cityWeather.message;
@@ -125,21 +149,22 @@ export const fetchData = async (city) => {
 };
 
 export const displayWeather = async (weatherData) => {
-  const imageUrl = await fetchImage(weatherData.current.condition.text);
+  console.log(weatherData);
+  const imageUrl = getImage(weatherData.current.condition.text);
   const main = document.querySelector(".main");
   const location = document.querySelector(".location");
   const country = document.querySelector(".country");
   const temp = document.querySelector(".temp");
   const humidity = document.querySelector(".humidity");
   const description = document.querySelector(".description");
-  const isDay = document.querySelector(".is-day");
+  const date = document.querySelector(".date");
+  const time = document.querySelector(".time");
   const tempUnit = document.querySelector(
     "input[name='temperature-unit']:checked",
   ).value;
+  const dateTime = new Date(weatherData.location.localtime);
 
-  if (imageUrl) {
-    document.body.style.background = `center / cover no-repeat url('${imageUrl}')`;
-  }
+  setBackground(imageUrl);
   location.textContent = weatherData.location.name;
   country.textContent = weatherData.location.country;
 
@@ -149,36 +174,23 @@ export const displayWeather = async (weatherData) => {
       : weatherData.current.temp_f + "\u00b0" + "F";
   humidity.textContent = weatherData.current.humidity;
   description.textContent = weatherData.current.condition.text;
-  isDay.textContent = weatherData.current.is_day ? "Day" : "Night";
+  date.textContent = dateTime.toDateString();
+  time.textContent = dateTime.toLocaleTimeString();
+
   main.classList.remove("hidden");
 };
 
-const fetchImage = async (q) => {
-  try {
-    let response = await fetch(
-      `https://api.giphy.com/v1/gifs/translate?api_key=${gifKey}&s=${q}`,
-      { mode: "cors" },
-    );
-    if (!response.ok) {
-      let actualError = "";
-      switch (response.status) {
-        case 401:
-          actualError = "API key incorrect";
-          break;
-        case 404:
-          actualError = "Network error";
-          break;
-        default:
-          actualError = "Network response was not OK";
-          break;
-      }
-      throw new Error(actualError);
-    }
-    response = await response.json();
+const setBackground = (imageUrl) => {
+  document.body.style.background = `center / cover no-repeat url('${imageUrl}')`;
+};
 
-    if (!response.data) throw new Error("Image not found");
-    return response.data.images.original.url;
-  } catch (error) {
-    console.error(error);
-  }
+const getImage = (condition) => {
+  const main = document.querySelector(".main");
+  main.className = "main";
+  if (condition.match(/rain/)) return rainy;
+  else if (condition.match(/sun/)) return sunny;
+  else if (condition.match(/cloud/)) {
+    main.classList.add("black-text");
+    return cloudy;
+  } else return clear;
 };
