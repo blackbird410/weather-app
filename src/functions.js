@@ -4,7 +4,6 @@ import clear from "./img/clear.jpg";
 import sunny from "./img/sunset.jpg";
 
 const key = "8212294bf6e74d0ba3980745241902";
-let currentData;
 
 const displayLoader = () => {
   const loadingContainer = document.createElement("div");
@@ -47,6 +46,7 @@ export const displayMain = () => {
   input.id = "city";
   input.name = "city";
   input.placeholder = "Enter a city...";
+  input.addEventListener("keypress", checkKey);
   btn.className = "submit-btn";
   btn.textContent = "Search";
   btn.addEventListener("click", getWeather);
@@ -93,15 +93,36 @@ export const displayMain = () => {
   document.body.appendChild(main);
 };
 
+const checkKey = (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    document.querySelector(".submit-btn").click();
+  }
+};
+
+const celciusToFarenheit = (c) => Math.round((c * 9) / 5 + 32);
+const fahrenheitToCelcius = (f) => Math.round((5 * (f - 32)) / 9);
+
 const switchUnit = (e) => {
-  if (currentData) {
-    let tempUnit = e.currentTarget.value;
-    const temp = document.querySelector(".temp");
-    console.log(tempUnit);
-    temp.textContent =
-      tempUnit === "celcius"
-        ? currentData.current.temp_c + "\u00b0" + "C"
-        : currentData.current.temp_f + "\u00b0" + "F";
+  const temp = document.querySelector(".temp");
+  let tempUnit = e.currentTarget.value;
+
+  if (temp.textContent) {
+    let currentValue = temp.textContent.split("°");
+    let currentUnit = currentValue[1];
+    currentValue = Number(currentValue[0]);
+
+    if (currentUnit !== tempUnit) {
+      currentValue =
+        currentUnit === "C"
+          ? celciusToFarenheit(currentValue)
+          : fahrenheitToCelcius(currentValue);
+
+      temp.textContent =
+        tempUnit === "celcius"
+          ? `${currentValue}\u00b0C`
+          : `${currentValue}\u00b0F`;
+    }
   }
 };
 
@@ -111,6 +132,7 @@ const getWeather = async () => {
   const loadingContainer = document.querySelector("#loading-container");
 
   if (city) {
+    document.querySelector("input").value = "";
     loadingContainer.classList.remove("hidden");
     const cityWeather = await fetchData(city);
     const error = document.querySelector("span");
@@ -119,7 +141,6 @@ const getWeather = async () => {
 
     if (cityWeather.current != undefined) {
       displayWeather(cityWeather);
-      currentData = cityWeather;
       error.classList.remove("active");
     } else {
       error.textContent = cityWeather.message;
@@ -132,8 +153,7 @@ const getWeather = async () => {
 export const fetchData = async (city) => {
   try {
     let response = await fetch(
-      `https://api.weatherapi.com/v1/current.json?key=${key}&q=${city}`,
-      { mode: "cors" },
+      `https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${city}&days=3`,
     );
 
     if (!response.ok) {
@@ -170,8 +190,8 @@ export const displayWeather = async (weatherData) => {
 
   temp.textContent =
     tempUnit === "celcius"
-      ? weatherData.current.temp_c + "\u00b0" + "C"
-      : weatherData.current.temp_f + "\u00b0" + "F";
+      ? `${Math.round(weatherData.current.temp_c)}\u00b0C`
+      : `${Math.round(weatherData.current.temp_f)}\u00b0F`;
   humidity.textContent = weatherData.current.humidity;
   description.textContent = weatherData.current.condition.text;
   date.textContent = dateTime.toDateString();
