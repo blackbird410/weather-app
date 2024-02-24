@@ -134,6 +134,7 @@ const getWeather = async () => {
   if (city) {
     document.querySelector("input").value = "";
     loadingContainer.classList.remove("hidden");
+    main.classList.add("hidden");
     const cityWeather = await fetchData(city);
     const error = document.querySelector("span");
     loadingContainer.classList.add("hidden");
@@ -154,6 +155,7 @@ export const fetchData = async (city) => {
   try {
     let response = await fetch(
       `https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${city}&days=3`,
+      { mode: "cors" },
     );
 
     if (!response.ok) {
