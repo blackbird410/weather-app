@@ -3,7 +3,57 @@ import rainy from "./img/rainy.jpg";
 import clear from "./img/clear.jpg";
 import sunny from "./img/sunset.jpg";
 
+class Forecast {
+  constructor(id) {
+    this.wrapper = document.createElement("div");
+    this.date = document.createElement("div");
+    this.icon = document.createElement("img");
+    this.condition = document.createElement("div");
+    this.tempWrapper = document.createElement("div");
+    this.temp = document.createElement("div");
+    this.maxTemp = document.createElement("div");
+    this.minTemp = document.createElement("div");
+
+    this.wrapper.className = "forecast-wrapper";
+    this.wrapper.id = `forecast-${id}`;
+    this.date.className = "date";
+    this.icon.className = "weather-icon";
+    this.condition.className = "condition";
+    this.tempWrapper.className = "temp-wrapper";
+    this.temp.className = "temp avg";
+    this.maxTemp.className = "temp max";
+    this.minTemp.className = "temp min";
+
+    this.tempWrapper.appendChild(this.minTemp);
+    this.tempWrapper.appendChild(this.temp);
+    this.tempWrapper.appendChild(this.maxTemp);
+    this.wrapper.appendChild(this.date);
+    this.wrapper.appendChild(this.icon);
+    this.wrapper.appendChild(this.condition);
+    this.wrapper.appendChild(this.tempWrapper);
+  }
+}
+
+const MAX_FORECAST_DAY = 7;
 const key = "8212294bf6e74d0ba3980745241902";
+
+const addForecast = (forecast) => {
+  for (let id = 1; id < MAX_FORECAST_DAY; id += 1) {
+    const data = forecast[id];
+    const wrapper = document.querySelector(`#forecast-${id}`);
+    wrapper.querySelector(".date").textContent = new Date(
+      data.date,
+    ).toDateString();
+    wrapper.querySelector(".weather-icon").src = data.day.condition.icon;
+    wrapper.querySelector(".condition").textContent = data.day.condition.text;
+    wrapper.querySelector(".temp.avg").textContent =
+      `${data.day.avgtemp_c}\u00b0C`;
+    wrapper.querySelector(".temp.max").textContent =
+      `${data.day.maxtemp_c}\u00b0C`;
+    wrapper.querySelector(".temp.min").textContent =
+      `${data.day.mintemp_c}\u00b0C`;
+  }
+};
 
 const displayLoader = () => {
   const loadingContainer = document.createElement("div");
@@ -33,6 +83,8 @@ export const displayMain = () => {
   const btn = document.createElement("div");
   const error = document.createElement("span");
   const radioWrapper = document.createElement("div");
+  const forecastContainer = document.createElement("div");
+  let id;
 
   main.className = "main hidden";
   location.className = "location";
@@ -52,6 +104,7 @@ export const displayMain = () => {
   btn.addEventListener("click", getWeather);
   error.className = "error";
   radioWrapper.className = "radio-wrapper";
+  forecastContainer.className = "forecast-container hidden";
 
   temp.style.background = "orange";
   temp.style.fontSize = "4rem";
@@ -77,6 +130,10 @@ export const displayMain = () => {
     radioWrapper.appendChild(w);
   });
 
+  for (id = 1; id < MAX_FORECAST_DAY; id += 1) {
+    forecastContainer.appendChild(new Forecast(id).wrapper);
+  }
+
   inputWrapper.appendChild(input);
   inputWrapper.appendChild(radioWrapper);
   inputWrapper.appendChild(btn);
@@ -91,6 +148,7 @@ export const displayMain = () => {
   document.body.appendChild(error);
   displayLoader();
   document.body.appendChild(main);
+  document.body.appendChild(forecastContainer);
 };
 
 const checkKey = (e) => {
@@ -100,61 +158,89 @@ const checkKey = (e) => {
   }
 };
 
-const celciusToFarenheit = (c) => Math.round((c * 9) / 5 + 32);
-const fahrenheitToCelcius = (f) => Math.round((5 * (f - 32)) / 9);
+const celciusToFarenheit = (c) => Math.round(((c * 9) / 5 + 32) * 10) / 10;
+const fahrenheitToCelcius = (f) => Math.round(((5 * (f - 32)) / 9) * 10) / 10;
 
 const switchUnit = (e) => {
-  const temp = document.querySelector(".temp");
+  const temps = document.querySelectorAll(".temp");
   let tempUnit = e.currentTarget.value;
 
-  if (temp.textContent) {
-    let currentValue = temp.textContent.split("°");
-    let currentUnit = currentValue[1];
-    currentValue = Number(currentValue[0]);
+  Array.from(temps).forEach((temp) => {
+    if (temp.textContent) {
+      let currentValue = temp.textContent.split("°");
+      let currentUnit = currentValue[1];
+      currentValue = Number(currentValue[0]);
 
-    if (currentUnit !== tempUnit) {
-      currentValue =
-        currentUnit === "C"
-          ? celciusToFarenheit(currentValue)
-          : fahrenheitToCelcius(currentValue);
+      if (currentUnit !== tempUnit) {
+        currentValue =
+          currentUnit === "C"
+            ? celciusToFarenheit(currentValue)
+            : fahrenheitToCelcius(currentValue);
 
-      temp.textContent =
-        tempUnit === "celcius"
-          ? `${currentValue}\u00b0C`
-          : `${currentValue}\u00b0F`;
+        temp.textContent =
+          tempUnit === "celcius"
+            ? `${currentValue}\u00b0C`
+            : `${currentValue}\u00b0F`;
+      }
     }
-  }
+  });
 };
 
 const getWeather = async () => {
   const city = document.querySelector("input").value;
-  const main = document.querySelector(".main");
   const loadingContainer = document.querySelector("#loading-container");
+  const error = document.querySelector("span");
 
   if (city) {
     document.querySelector("input").value = "";
     loadingContainer.classList.remove("hidden");
-    main.classList.add("hidden");
+    error.classList.remove("active");
+    toggleForecast("hidden");
+
     const cityWeather = await fetchData(city);
-    const error = document.querySelector("span");
     loadingContainer.classList.add("hidden");
-    main.classList.remove("hidden");
 
     if (cityWeather.current != undefined) {
       displayWeather(cityWeather);
-      error.classList.remove("active");
     } else {
       error.textContent = cityWeather.message;
       error.classList.add("active");
-      main.classList.add("hidden");
+      toggleForecast("hidden");
     }
+  }
+};
+
+const toggleForecast = (state) => {
+  const main = document.querySelector(".main");
+  const forecast = document.querySelector(".forecast-container");
+  switch (state) {
+    case "visible":
+      main.classList.remove("hidden");
+      forecast.classList.remove("hidden");
+      //Array.from(forecasts).forEach(f => f.classList.remove('hidden'));
+      break;
+    case "black-text":
+      main.classList.add("black-text");
+      forecast.classList.add("black-text");
+      //Array.from(forecasts).forEach(f => f.classList.add('black-text'));
+      break;
+    case "white-text":
+      main.classList.remove("black-text");
+      forecast.classList.remove("black-text");
+      //Array.from(forecasts).forEach(f => f.classList.remove('black-text'));
+      break;
+    default:
+      main.classList.add("hidden");
+      forecast.classList.add("hidden");
+      //Array.from(forecasts).forEach(f => f.classList.add('hidden'));
+      break;
   }
 };
 
 export const fetchData = async (city) => {
   try {
     let response = await fetch(
-      `https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${city}&days=3`,
+      `https://api.weatherapi.com/v1/forecast.json?key=${key}&q=${city}&days=${MAX_FORECAST_DAY}`,
       { mode: "cors" },
     );
 
@@ -171,7 +257,6 @@ export const fetchData = async (city) => {
 };
 
 export const displayWeather = async (weatherData) => {
-  console.log(weatherData);
   const imageUrl = getImage(weatherData.current.condition.text);
   const main = document.querySelector(".main");
   const location = document.querySelector(".location");
@@ -199,7 +284,8 @@ export const displayWeather = async (weatherData) => {
   date.textContent = dateTime.toDateString();
   time.textContent = dateTime.toLocaleTimeString();
 
-  main.classList.remove("hidden");
+  addForecast(weatherData.forecast.forecastday);
+  toggleForecast("visible");
 };
 
 const setBackground = (imageUrl) => {
@@ -207,12 +293,11 @@ const setBackground = (imageUrl) => {
 };
 
 const getImage = (condition) => {
-  const main = document.querySelector(".main");
-  main.className = "main";
+  toggleForecast("white-text");
   if (condition.match(/rain/)) return rainy;
   else if (condition.match(/sun/)) return sunny;
   else if (condition.match(/cloud/)) {
-    main.classList.add("black-text");
+    toggleForecast("black-text");
     return cloudy;
   } else return clear;
 };

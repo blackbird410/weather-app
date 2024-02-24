@@ -1,9 +1,9 @@
 @import url("https://fonts.googleapis.com/css?family=Poppins:100,200,300,400,500,600,700,800,900");
 
 body {
-  height: 100vh;
+  min-height: 100vh;
   margin: 0;
-  padding: 0;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -11,13 +11,16 @@ body {
   gap: 1rem;
   text-align: center;
   font-family: "Poppins", sans-serif;
+  color: white;
 }
 
-.main.black-text {
+.main.black-text,
+.forecast-container.black-text {
   color: #1f51ff;
 }
 
-.hidden {
+.hidden,
+.forecast-container.hidden {
   display: none;
 }
 
@@ -61,7 +64,6 @@ input {
 
 .submit-btn {
   background: orange;
-  color: white;
   font-weight: bold;
   border: none;
   border-radius: 1rem;
@@ -79,7 +81,36 @@ input {
   padding: 1rem;
   border-radius: 1rem;
   min-width: 350px;
-  color: white;
+}
+
+.forecast-container {
+  display: flex;
+  flex-basis: 180px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  overflow-y: scroll;
+}
+
+.forecast-wrapper {
+  backdrop-filter: blur(15px);
+  padding: 1rem;
+}
+
+.temp-wrapper {
+  display: flex;
+  gap: 1rem;
+  justify-items: center;
+  align-items: center;
+}
+
+.max {
+  color: red;
+}
+
+.min {
+  color: #3498db;
 }
 
 .location {
