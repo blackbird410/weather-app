@@ -34,7 +34,7 @@ class Forecast {
   }
 }
 
-const MAX_FORECAST_DAY = 7;
+const MAX_FORECAST_DAY = 3;
 const key = "8212294bf6e74d0ba3980745241902";
 
 const addForecast = (forecast) => {
