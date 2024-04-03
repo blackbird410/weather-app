@@ -171,7 +171,7 @@ const switchUnit = (e) => {
       let currentUnit = currentValue[1];
       currentValue = Number(currentValue[0]);
 
-      if (currentUnit !== tempUnit) {
+      if (currentUnit !== tempUnit.at(0).toUpperCase()) {
         currentValue =
           currentUnit === "C"
             ? celciusToFarenheit(currentValue)
